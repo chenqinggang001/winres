@@ -449,17 +449,14 @@ impl WindowsResource {
             )?;
         }
         if let Some(e) = self.version_info.get(&VersionInfo::FILETYPE) {
-            if let Some(manf) = self.manifest.as_ref() {
-                writeln!(f, "{} 24 BEGIN", e)?;
-                for line in manf.lines() {
-                    let line = escape_string(line);
-                    if !line.is_empty() {
-                        writeln!(f, "    \"{}\"", line)?;
-                    }
-                }
-                writeln!(f, "END")?;
-            } else if let Some(manf) = self.manifest_file.as_ref() {
-                writeln!(f, "{} 24 \"{}\"", e, escape_string(manf))?;
+            if let Some(manf_path) = self.manifest_file.as_ref() {
+                writeln!(f, "{} 24 \"{}\"", e, escape_string(manf_path))?;
+            } else if let Some(manf) = self.manifest.as_ref() {
+                let mut manifest_path = path.to_path_buf();
+                manifest_path.set_extension("manifest");
+                fs::write(&manifest_path, manf)?;
+                let manifest_str = manifest_path.to_string_lossy();
+                writeln!(f, "{} 24 \"{}\"", e, escape_string(&manifest_str))?;
             }
         }
         writeln!(f, "{}", self.append_rc_content)?;
