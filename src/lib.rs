@@ -450,12 +450,14 @@ impl WindowsResource {
         }
         if let Some(e) = self.version_info.get(&VersionInfo::FILETYPE) {
             if let Some(manf) = self.manifest.as_ref() {
-                writeln!(f, "{} 24", e)?;
-                writeln!(f, "{{")?;
+                writeln!(f, "{} 24 BEGIN", e)?;
                 for line in manf.lines() {
-                    writeln!(f, "\" {} \"", escape_string(line.trim()))?;
+                    let line = escape_string(line);
+                    if !line.is_empty() {
+                        writeln!(f, "    \"{}\"", line)?;
+                    }
                 }
-                writeln!(f, "}}")?;
+                writeln!(f, "END")?;
             } else if let Some(manf) = self.manifest_file.as_ref() {
                 writeln!(f, "{} 24 \"{}\"", e, escape_string(manf))?;
             }
